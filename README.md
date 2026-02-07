@@ -23,6 +23,53 @@ But the devil is in the details — keybr.com offers a few unique features:
     <img src="docs/assets/graph.png" alt="screenshot" width="600"/>
 </p>
 
+## Project overview
+
+This repository is a fork focused on Japanese kana practice using romaji input
+(hiragana + katakana), while keeping the original keybr adaptive lesson engine.
+It prioritizes a practical learning flow for beginners and supports both
+Hepburn and Kunrei romaji variants.
+
+## Usage
+
+### Install
+
+```bash
+npm install
+```
+
+### Build (development)
+
+```bash
+npm run build-dev
+```
+
+### Run locally
+
+```bash
+APP_URL=http://localhost:3000/ npm start
+```
+
+Open `http://localhost:3000/` in a browser.
+
+### Japanese kana (romaji) mode
+
+1. Open the Practice page and click the settings button (gear icon).
+2. Go to **Keyboard**:
+   - `Language` → **Japanese**
+   - `Layout` → **Japanese Romaji** (layout id: `ja-romaji`)
+3. Go to **Lessons** (Guided lesson):
+   - Optional: enable **Balance kana frequency**
+   - Optional: adjust **Katakana ratio** (set to `0` for hiragana-only)
+4. (Optional) In **Keyboard**, toggle **Show romaji helper** if you want to see
+   suggested romaji spellings for the next kana.
+
+### Tests
+
+```bash
+npm run test
+```
+
 ## Can I contribute?
 
 Yes!
