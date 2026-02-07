@@ -51,7 +51,7 @@ export const lessonProps = {
     benford: booleanProp("lesson.numbers.benford", true),
   } as const,
   japanese: {
-    katakanaRatio: numberProp("lesson.japanese.katakanaRatio", 0.3, {
+    katakanaRatio: numberProp("lesson.japanese.katakanaRatio", 0, {
       min: 0,
       max: 1,
     }),

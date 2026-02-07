@@ -7,7 +7,7 @@ export function generateFragment(
   nextWord: WordGenerator,
   { repeatWords = 1 }: { readonly repeatWords?: number } = {},
 ): string {
-  const length = 100 + Math.round(settings.get(lessonProps.length) * 100);
+  const length = 50 + Math.round(settings.get(lessonProps.length) * 100);
   const words: string[] = [];
   let wordsLength = 0;
   while (true) {
