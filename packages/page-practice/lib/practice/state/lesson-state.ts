@@ -42,6 +42,12 @@ export class LessonState {
 
   lastLesson: LastLesson | null = null;
 
+  // Romaji IME UI state (used only by Japanese Romaji practice).
+  imeEnabled = false;
+  imePreedit = "";
+  imeValid = true;
+  imeHints: readonly string[] = [];
+
   textInput!: TextInput; // Mutable.
   lines!: LineList; // Mutable.
   suffix!: readonly CodePoint[]; // Mutable.
@@ -89,11 +95,36 @@ export class LessonState {
   }
 
   #makeResult(timeStamp = Date.now()) {
+    const steps =
+      this.lesson.model.language.id === "ja"
+        ? normalizeKanaSteps(this.textInput.steps)
+        : this.textInput.steps;
     return Result.fromStats(
       this.settings.get(keyboardProps.layout),
       this.settings.get(lessonProps.type).textType,
       timeStamp,
-      makeStats(this.textInput.steps),
+      makeStats(steps),
     );
   }
+}
+
+function normalizeKanaSteps(
+  steps: readonly { timeStamp: number; codePoint: CodePoint; timeToType: number; typo: boolean }[],
+) {
+  return steps.map((step) => ({
+    ...step,
+    codePoint: katakanaToHiragana(step.codePoint),
+  }));
+}
+
+function katakanaToHiragana(codePoint: CodePoint): CodePoint {
+  // Katakana-Hiragana prolonged sound mark: keep as-is.
+  if (codePoint === 0x30fc) {
+    return codePoint;
+  }
+  // Katakana letters map to Hiragana by subtracting 0x60.
+  if (codePoint >= 0x30a1 && codePoint <= 0x30f6) {
+    return (codePoint - 0x0060) as CodePoint;
+  }
+  return codePoint;
 }

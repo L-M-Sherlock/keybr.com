@@ -4,7 +4,7 @@ import { KeyCharacters } from "./keycharacters.ts";
 import { KeyCombo } from "./keycombo.ts";
 import { KeyModifier } from "./keymodifier.ts";
 import { KeyShape } from "./keyshape.ts";
-import { getExampleLetters, getExampleText } from "./language.ts";
+import { getExampleLetters, getExampleText, Language } from "./language.ts";
 import { type Layout } from "./layout.ts";
 import {
   type CharacterDict,
@@ -148,12 +148,19 @@ export class Keyboard {
   }
 
   getExampleText(): string {
-    return getExampleText(this.layout.language);
+    // `ja-romaji` uses a Latin physical keyboard but generates Japanese lessons.
+    // Use English examples so that the example set intersects with the keyboard
+    // code points (otherwise tests and preview are empty).
+    const language =
+      this.layout.id === "ja-romaji" ? Language.EN : this.layout.language;
+    return getExampleText(language);
   }
 
   getExampleLetters(): CodePoint[] {
     const codePoints = this.getCodePoints();
-    return getExampleLetters(this.layout.language).filter(codePoints.has);
+    const language =
+      this.layout.id === "ja-romaji" ? Language.EN : this.layout.language;
+    return getExampleLetters(language).filter(codePoints.has);
   }
 }
 

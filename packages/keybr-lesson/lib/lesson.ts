@@ -26,7 +26,13 @@ export abstract class Lesson {
     this.settings = settings;
     this.keyboard = keyboard;
     this.codePoints = keyboard.getCodePoints();
-    this.model = PhoneticModel.restrict(model, this.codePoints);
+    // For Japanese Romaji input, the physical keyboard is Latin, but lessons
+    // must be generated in kana. Do not restrict the phonetic model by the
+    // keyboard code points in this case.
+    this.model =
+      model.language.id === "ja"
+        ? model
+        : PhoneticModel.restrict(model, this.codePoints);
   }
 
   filter(results: readonly Result[]): readonly Result[] {

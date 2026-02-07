@@ -155,6 +155,7 @@ const layouts = new Map<Layout, CharacterDict>([
     LAYOUT_EN_HANDS_DOWN_PROMETHIUM_INVERTED,
   ],
   [Layout.EN_JP, LAYOUT_JA_JP_JIS],
+  [Layout.JA_ROMAJI, LAYOUT_EN_US],
   [Layout.EN_KUNTEM, LAYOUT_EN_KUNTEM],
   [Layout.EN_MTGAP, LAYOUT_EN_MTGAP],
   [Layout.EN_NERPS, LAYOUT_EN_NERPS],

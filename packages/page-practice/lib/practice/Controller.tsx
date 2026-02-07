@@ -1,8 +1,16 @@
 import { type KeyId, useKeyboard } from "@keybr/keyboard";
 import { type Result } from "@keybr/result";
-import { type LineList } from "@keybr/textinput";
-import { addKey, deleteKey, emulateLayout } from "@keybr/textinput-events";
+import { type LineList, type TextInput } from "@keybr/textinput";
+import {
+  addKey,
+  deleteKey,
+  emulateLayout,
+  type IInputEvent,
+  RomajiIme,
+  romajiOptionsForKana,
+} from "@keybr/textinput-events";
 import { makeSoundPlayer } from "@keybr/textinput-sounds";
+import { type CodePoint } from "@keybr/unicode";
 import {
   useDocumentEvent,
   useHotkeys,
@@ -77,16 +85,35 @@ function useLessonState(
       onResultRef.current(result);
     });
     state.lastLesson = lastLessonRef.current;
+    state.imeEnabled = keyboard.layout.id === "ja-romaji";
+    const ime = state.imeEnabled ? new RomajiIme() : null;
+    const updateImeHints = () => {
+      if (!state.imeEnabled) {
+        state.imeHints = [];
+        return;
+      }
+      const kana = expectedKana(state.textInput);
+      state.imeHints = kana ? romajiOptionsForKana(kana) : [];
+    };
+    updateImeHints();
     setLines(state.lines);
     setDepressedKeys(state.depressedKeys);
     const handleResetLesson = () => {
       state.resetLesson();
+      ime?.reset();
+      state.imePreedit = "";
+      state.imeValid = true;
+      updateImeHints();
       setLines(state.lines);
       setDepressedKeys((state.depressedKeys = []));
       timeout.cancel();
     };
     const handleSkipLesson = () => {
       state.skipLesson();
+      ime?.reset();
+      state.imePreedit = "";
+      state.imeValid = true;
+      updateImeHints();
       setLines(state.lines);
       setDepressedKeys((state.depressedKeys = []));
       timeout.cancel();
@@ -108,10 +135,25 @@ function useLessonState(
         },
         onInput: (event) => {
           state.lastLesson = null;
-          const feedback = state.onInput(event);
-          setLines(state.lines);
-          playSounds(feedback);
-          timeout.schedule(handleResetLesson, 10000);
+          if (ime != null) {
+            const res = ime.consume(event);
+            state.imePreedit = res.preedit;
+            state.imeValid = res.valid;
+            for (const ev of res.events) {
+              const mapped = mapKanaEventToExpected(ev, state.textInput);
+              const feedback = state.onInput(mapped);
+              playSounds(feedback);
+            }
+            updateImeHints();
+            // Force UI update even if no events were emitted (preedit changed).
+            setLines(state.lines);
+            timeout.schedule(handleResetLesson, 10000);
+          } else {
+            const feedback = state.onInput(event);
+            setLines(state.lines);
+            playSounds(feedback);
+            timeout.schedule(handleResetLesson, 10000);
+          }
         },
       },
     );
@@ -124,4 +166,81 @@ function useLessonState(
       handleInput: onInput,
     };
   }, [progress, keyboard, timeout, key]);
+}
+
+function mapKanaEventToExpected(
+  event: IInputEvent,
+  textInput: TextInput,
+): IInputEvent {
+  if (event.inputType !== "appendChar") {
+    return event;
+  }
+  if (textInput.completed) {
+    return event;
+  }
+  const expected = textInput.at(textInput.pos).codePoint as CodePoint;
+  const codePoint = mapKanaCodePointToExpected(
+    event.codePoint as CodePoint,
+    expected,
+  );
+  return codePoint === event.codePoint ? event : { ...event, codePoint };
+}
+
+function mapKanaCodePointToExpected(
+  actual: CodePoint,
+  expected: CodePoint,
+): CodePoint {
+  // Katakana-Hiragana prolonged sound mark: keep as-is.
+  if (actual === 0x30fc) {
+    return actual;
+  }
+  if (isKatakanaCodePoint(expected) && isHiraganaCodePoint(actual)) {
+    return (actual + 0x0060) as CodePoint;
+  }
+  return actual;
+}
+
+function expectedKana(textInput: TextInput): string {
+  if (textInput.completed) {
+    return "";
+  }
+  const a = textInput.at(textInput.pos).codePoint as CodePoint;
+  const aH = katakanaToHiragana(a);
+  const b =
+    textInput.pos + 1 < textInput.length
+      ? (textInput.at(textInput.pos + 1).codePoint as CodePoint)
+      : null;
+  const bH = b != null ? katakanaToHiragana(b) : null;
+  if (isHiraganaCodePoint(aH) && isSmallYCodePoint(bH)) {
+    return String.fromCodePoint(aH, bH!);
+  }
+  if (isHiraganaCodePoint(aH) || aH === 0x30fc) {
+    return String.fromCodePoint(aH);
+  }
+  return "";
+}
+
+function katakanaToHiragana(codePoint: CodePoint): CodePoint {
+  if (codePoint === 0x30fc) {
+    return codePoint;
+  }
+  if (codePoint >= 0x30a1 && codePoint <= 0x30f6) {
+    return (codePoint - 0x0060) as CodePoint;
+  }
+  return codePoint;
+}
+
+function isHiraganaCodePoint(codePoint: CodePoint): boolean {
+  return codePoint >= 0x3041 && codePoint <= 0x3096;
+}
+
+function isKatakanaCodePoint(codePoint: CodePoint): boolean {
+  return codePoint >= 0x30a1 && codePoint <= 0x30f6;
+}
+
+function isSmallYCodePoint(codePoint: CodePoint | null): boolean {
+  if (codePoint == null) {
+    return false;
+  }
+  return codePoint === 0x3083 || codePoint === 0x3085 || codePoint === 0x3087; // ゃゅょ
 }

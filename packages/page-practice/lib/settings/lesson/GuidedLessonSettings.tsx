@@ -3,6 +3,8 @@ import { Description, Explainer, FieldSet } from "@keybr/widget";
 import { type ReactNode } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { AlphabetSizeProp } from "./AlphabetSizeProp.tsx";
+import { BalanceKanaProp } from "./BalanceKanaProp.tsx";
+import { KatakanaRatioProp } from "./KatakanaRatioProp.tsx";
 import { KeyboardOrderProp } from "./KeyboardOrderProp.tsx";
 import { LessonLengthProp } from "./LessonLengthProp.tsx";
 import { NaturalWordsProp } from "./NaturalWordsProp.tsx";
@@ -38,6 +40,13 @@ export function GuidedLessonSettings({
         <KeyboardOrderProp />
         <NaturalWordsProp />
         <RepeatWordsProp />
+        {lesson.model.language.id === "ja" &&
+          lesson.keyboard.layout.id === "ja-romaji" && (
+            <>
+              <BalanceKanaProp />
+              <KatakanaRatioProp />
+            </>
+          )}
         <AlphabetSizeProp />
         <TextManglingProp />
         <LessonLengthProp />

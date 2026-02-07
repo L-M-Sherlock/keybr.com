@@ -200,7 +200,7 @@ export class Language implements EnumItem {
     Language.HR,
     Language.HU,
     Language.IT,
-    // Language.JA,
+    Language.JA,
     Language.LT,
     Language.LV,
     Language.NB,

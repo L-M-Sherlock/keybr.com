@@ -12,6 +12,12 @@ import {
 } from "./convert-xyz.ts";
 import { type Rgb, type Xyz } from "./types.ts";
 
+function assertClose(actual: number, expected: number, eps: number): void {
+  if (Math.abs(actual - expected) > eps) {
+    throw new Error(`Expected ${actual} to be within ${eps} of ${expected}`);
+  }
+}
+
 test("gamma rgb / linear rgb", () => {
   const a: Rgb = { r: 0, g: 0, b: 0, alpha: 0 };
   const b: Rgb = { r: 0, g: 0, b: 0, alpha: 0 };
@@ -102,12 +108,21 @@ test("rgb / oklch", () => {
     h: 0.08120522299896633,
     alpha: 0.5,
   });
-  like(oklchToRgb(new OklchColor(0.6279553639214313, 0.25768330380536064, 0.08120522299896633, 0.5)), {
-    r: 0.9999999999999997,
-    g: 4.304625232653958e-15,
-    b: 0,
-    alpha: 0.5,
-  });
+  {
+    // Floating-point math differs slightly across runtimes; assert near-zero.
+    const rgb = oklchToRgb(
+      new OklchColor(
+        0.6279553639214313,
+        0.25768330380536064,
+        0.08120522299896633,
+        0.5,
+      ),
+    );
+    assertClose(rgb.r, 1, 1e-12);
+    assertClose(rgb.g, 0, 1e-12);
+    assertClose(rgb.b, 0, 1e-12);
+    assertClose(rgb.alpha, 0.5, 0);
+  }
 
   like(rgbToOklch(new RgbColor(1, 1, 1, 0.5)), {
     l: 1,

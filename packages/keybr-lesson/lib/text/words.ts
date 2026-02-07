@@ -131,3 +131,55 @@ export function mangledWords(
     return word;
   };
 }
+
+export function mixKanaScripts(
+  nextWord: WordGenerator,
+  {
+    katakanaRatio = 0,
+  }: {
+    readonly katakanaRatio?: number;
+  },
+  random: RNG,
+): WordGenerator {
+  if (!(katakanaRatio > 0)) {
+    return nextWord;
+  }
+  return () => {
+    const word = nextWord();
+    if (word == null || word === "") {
+      return word;
+    }
+    if (katakanaRatio >= random() && containsHiragana(word)) {
+      return toKatakana(word);
+    }
+    return word;
+  };
+}
+
+function containsHiragana(text: string): boolean {
+  for (const ch of text) {
+    const codePoint = ch.codePointAt(0)!;
+    if (isHiraganaCodePoint(codePoint)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function toKatakana(text: string): string {
+  let out = "";
+  for (const ch of text) {
+    const codePoint = ch.codePointAt(0)!;
+    if (isHiraganaCodePoint(codePoint)) {
+      out += String.fromCodePoint(codePoint + 0x0060);
+    } else {
+      out += ch;
+    }
+  }
+  return out;
+}
+
+function isHiraganaCodePoint(codePoint: number): boolean {
+  // Basic Hiragana block. Katakana equivalents are at +0x60.
+  return codePoint >= 0x3041 && codePoint <= 0x3096;
+}

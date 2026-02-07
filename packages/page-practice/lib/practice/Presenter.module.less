@@ -15,3 +15,28 @@
 .keyboard {
   margin-block-start: 3rem;
 }
+
+.imeBar {
+  margin-block-start: 0.75rem;
+  display: grid;
+  grid-template-columns: minmax(6rem, 1fr) 2fr;
+  gap: 0.75rem;
+  align-items: baseline;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9rem;
+  user-select: none;
+  opacity: 0.85;
+}
+
+.imePreedit {
+  color: #2b2b2b;
+}
+
+.imePreedit_invalid {
+  color: #b00020;
+}
+
+.imeHints {
+  color: #4a4a4a;
+}

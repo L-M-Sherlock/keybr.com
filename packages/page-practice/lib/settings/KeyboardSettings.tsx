@@ -26,6 +26,7 @@ import {
 } from "@keybr/widget";
 import { memo, type ReactNode, useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { RomajiHelperProp } from "./lesson/RomajiHelperProp.tsx";
 
 export function KeyboardSettings(): ReactNode {
   const { formatMessage } = useIntl();
@@ -144,6 +145,7 @@ function LayoutProp(): ReactNode {
           />
         </Description>
       </Explainer>
+      {options.layout.id === "ja-romaji" && <RomajiHelperProp />}
       <FieldList>
         <Field>
           <CheckBox

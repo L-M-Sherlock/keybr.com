@@ -12,6 +12,7 @@ import { Target } from "./target.ts";
 import { generateFragment } from "./text/fragment.ts";
 import {
   mangledWords,
+  mixKanaScripts,
   phoneticWords,
   randomWords,
   uniqueWords,
@@ -27,8 +28,12 @@ export class GuidedLesson extends Lesson {
     wordList: WordList,
   ) {
     super(settings, keyboard, model);
+    const dictCodePoints =
+      model.language.id === "ja"
+        ? new Set(model.letters.map(({ codePoint }) => codePoint))
+        : this.codePoints;
     this.dictionary = new Dictionary(
-      filterWordList(wordList, this.codePoints).filter(
+      filterWordList(wordList, dictCodePoints).filter(
         (word) => word.length > 2,
       ),
     );
@@ -112,8 +117,13 @@ export class GuidedLesson extends Lesson {
       lessonKeys.findIncludedKeys(),
       lessonKeys.findFocusedKey(),
     );
-    const wordGenerator = this.#makeWordGenerator(filter, rng);
-    const words = mangledWords(
+    const wordGenerator =
+      this.model.language.id === "ja" &&
+      this.keyboard.layout.id === "ja-romaji" &&
+      this.settings.get(lessonProps.japanese.balanceKana)
+        ? this.#makeBalancedWordGenerator(lessonKeys, rng)
+        : this.#makeWordGenerator(filter, rng);
+    let words = mangledWords(
       uniqueWords(wordGenerator),
       this.model.language,
       Letter.restrict(Letter.punctuators, this.codePoints),
@@ -123,6 +133,15 @@ export class GuidedLesson extends Lesson {
       },
       rng,
     );
+    if (this.model.language.id === "ja") {
+      words = mixKanaScripts(
+        words,
+        {
+          katakanaRatio: this.settings.get(lessonProps.japanese.katakanaRatio),
+        },
+        rng,
+      );
+    }
     return generateFragment(this.settings, words, {
       repeatWords: this.settings.get(lessonProps.repeatWords),
     });
@@ -130,6 +149,20 @@ export class GuidedLesson extends Lesson {
 
   #getLetters() {
     const { letters } = this.model;
+    if (this.model.language.id === "ja") {
+      const order = new Map<number, number>();
+      for (let i = 0; i < this.model.language.alphabet.length; i++) {
+        order.set(this.model.language.alphabet[i], i);
+      }
+      const unknown = Number.MAX_SAFE_INTEGER;
+      return [...letters].sort(
+        (a, b) =>
+          (order.get(a.codePoint) ?? unknown) -
+            (order.get(b.codePoint) ?? unknown) ||
+          a.codePoint - b.codePoint,
+      );
+    }
+
     const { codePoints } = this;
     if (this.settings.get(lessonProps.guided.keyboardOrder)) {
       return Letter.weightedFrequencyOrder(letters, ({ codePoint }) =>
@@ -158,5 +191,37 @@ export class GuidedLesson extends Lesson {
       return randomWords(words, rng);
     }
     return pseudoWords;
+  }
+
+  #makeBalancedWordGenerator(lessonKeys: LessonKeys, rng: RNGStream) {
+    const includedKeys = lessonKeys.findIncludedKeys();
+    const focusedKey = lessonKeys.findFocusedKey();
+    const baseFilter = new Filter(includedKeys, focusedKey);
+    const baseGenerator = this.#makeWordGenerator(baseFilter, rng);
+    if (focusedKey == null) {
+      return baseGenerator;
+    }
+    const otherKeys = includedKeys.filter(
+      (k) => k.letter.codePoint !== focusedKey.letter.codePoint,
+    );
+    if (otherKeys.length === 0) {
+      return baseGenerator;
+    }
+    const otherGenerators = otherKeys.map((key) =>
+      this.#makeWordGenerator(new Filter(includedKeys, key), rng),
+    );
+    let otherIndex = 0;
+    let count = 0;
+    // Keep the original keybr behavior (focused key in most words), but ensure
+    // every unlocked kana appears regularly even if the phonetic model's
+    // transitions make it rare with the current focus.
+    return () => {
+      count++;
+      if (count % 4 !== 0) {
+        return baseGenerator();
+      }
+      const gen = otherGenerators[otherIndex++ % otherGenerators.length];
+      return gen();
+    };
   }
 }

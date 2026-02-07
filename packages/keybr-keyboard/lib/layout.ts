@@ -183,6 +183,25 @@ export class Layout implements XEnumItem {
       Geometry.JAPANESE_106_FULL,
     ),
   );
+  /**
+   * Japanese language (hiragana/katakana), but uses a standard Latin QWERTY
+   * physical keyboard for input (romaji).
+   */
+  static readonly JA_ROMAJI = new Layout(
+    /* id= */ "ja-romaji",
+    /* xid= */ 0xb1,
+    /* name= */ "{JP} (Romaji)",
+    /* family= */ "ja-romaji",
+    /* language= */ Language.JA,
+    /* emulate= */ false,
+    /* geometries= */ new Enum(
+      Geometry.ANSI_101,
+      Geometry.ANSI_101_FULL,
+      Geometry.ISO_102,
+      Geometry.ISO_102_FULL,
+      Geometry.MATRIX,
+    ),
+  );
   static readonly DE_DE = new Layout(
     /* id= */ "de-de",
     /* xid= */ 0x20,
@@ -1368,6 +1387,7 @@ export class Layout implements XEnumItem {
     Layout.EN_KUNTEM,
     Layout.EN_UK,
     Layout.EN_JP,
+    Layout.JA_ROMAJI,
     Layout.EN_MTGAP,
     Layout.EL_GR,
     Layout.CS_CZ,

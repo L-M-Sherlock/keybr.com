@@ -1,8 +1,10 @@
 import { describe, it, test } from "node:test";
-import { Layout, loadKeyboard } from "@keybr/keyboard";
-import { FakePhoneticModel } from "@keybr/phonetic-model";
+import { Language, Layout, loadKeyboard, Ngram1, Ngram2 } from "@keybr/keyboard";
+import { FakePhoneticModel, Letter, PhoneticModel } from "@keybr/phonetic-model";
+import { LCG } from "@keybr/rand";
 import { makeKeyStatsMap } from "@keybr/result";
 import { Settings } from "@keybr/settings";
+import { flattenStyledText } from "@keybr/textinput";
 import { deepEqual, equal } from "rich-assert";
 import { fakeKeyStatsMap, printLessonKeys } from "./fakes.ts";
 import { GuidedLesson } from "./guided.ts";
@@ -144,6 +146,107 @@ test("provide key set", () => {
       isForced: false,
     }),
   );
+});
+
+test("order japanese letters by gojuon", () => {
+  const settings = new Settings().set(lessonProps.guided.keyboardOrder, true);
+  const keyboard = loadKeyboard(Layout.EN_US);
+
+  const a = new Letter(/* "あ" */ 0x3042, 0.01);
+  const i = new Letter(/* "い" */ 0x3044, 0.02);
+  const u = new Letter(/* "う" */ 0x3046, 0.03);
+  const e = new Letter(/* "え" */ 0x3048, 0.04);
+  const o = new Letter(/* "お" */ 0x304a, 0.05);
+  const ka = new Letter(/* "か" */ 0x304b, 1.0);
+  const ki = new Letter(/* "き" */ 0x304d, 0.9);
+
+  // Intentionally scrambled to ensure the lesson does NOT use frequency/keyboard order.
+  const model = new (class extends PhoneticModel {
+    constructor() {
+      super(Language.JA, [ka, o, i, ki, u, a, e]);
+    }
+    override nextWord(): string {
+      throw new Error("not used");
+    }
+    override ngram1(): Ngram1 {
+      const alphabet = this.letters.map(({ codePoint }) => codePoint);
+      const ngram = new Ngram1(alphabet);
+      for (const codePoint of alphabet) {
+        ngram.set(codePoint, 1);
+      }
+      return ngram;
+    }
+    override ngram2(): Ngram2 {
+      const alphabet = this.letters.map(({ codePoint }) => codePoint);
+      const ngram = new Ngram2(alphabet);
+      for (const a of alphabet) {
+        for (const b of alphabet) {
+          ngram.set(a, b, 1);
+        }
+      }
+      return ngram;
+    }
+  })();
+
+  const lesson = new GuidedLesson(settings, keyboard, model, []);
+  const lessonKeys = lesson.update(
+    fakeKeyStatsMap(
+      settings,
+      model.letters.map((letter) => [letter, null, null]),
+    ),
+  );
+
+  equal([...lessonKeys].map((k) => String(k.letter)).join(""), "あいうえおかき");
+});
+
+test("balance japanese kana in guided text", () => {
+  const settings = new Settings()
+    .set(lessonProps.guided.naturalWords, false)
+    .set(lessonProps.japanese.katakanaRatio, 0)
+    .set(lessonProps.japanese.balanceKana, true);
+  const keyboard = loadKeyboard(Layout.JA_ROMAJI);
+
+  const letters = ["あ", "い", "う", "え", "お", "か", "き"].map(
+    (ch, i) => new Letter(ch.codePointAt(0)!, 1 / (i + 1)),
+  );
+
+  const model = new (class extends PhoneticModel {
+    constructor() {
+      super(Language.JA, letters);
+    }
+    override nextWord(filter: any): string {
+      const cp = filter.focusedCodePoint ?? this.letters[0].codePoint;
+      const ch = String.fromCodePoint(cp);
+      return ch + ch + ch;
+    }
+    override ngram1(): Ngram1 {
+      const alphabet = this.letters.map(({ codePoint }) => codePoint);
+      const ngram = new Ngram1(alphabet);
+      for (const codePoint of alphabet) {
+        ngram.set(codePoint, 1);
+      }
+      return ngram;
+    }
+    override ngram2(): Ngram2 {
+      const alphabet = this.letters.map(({ codePoint }) => codePoint);
+      const ngram = new Ngram2(alphabet);
+      for (const a of alphabet) {
+        for (const b of alphabet) {
+          ngram.set(a, b, 1);
+        }
+      }
+      return ngram;
+    }
+  })();
+
+  const lesson = new GuidedLesson(settings, keyboard, model, []);
+  const lessonKeys = lesson.update(makeKeyStatsMap(lesson.letters, []));
+  const text = lesson.generate(lessonKeys, LCG(1));
+
+  // Focus starts on the first kana and will dominate, but balancing must inject
+  // other unlocked kana regularly.
+  const s = flattenStyledText(text);
+  equal(s.includes("い") || s.includes("う") || s.includes("え"), true);
 });
 
 describe("generate text from a broken phonetic model", () => {

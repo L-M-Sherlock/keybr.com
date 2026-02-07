@@ -50,6 +50,14 @@ export const lessonProps = {
   numbers: {
     benford: booleanProp("lesson.numbers.benford", true),
   } as const,
+  japanese: {
+    katakanaRatio: numberProp("lesson.japanese.katakanaRatio", 0.3, {
+      min: 0,
+      max: 1,
+    }),
+    balanceKana: booleanProp("lesson.japanese.balanceKana", true),
+    showRomajiHelper: booleanProp("lesson.japanese.showRomajiHelper", true),
+  } as const,
   code: {
     syntax: itemProp("lesson.code.syntax", Syntax.ALL, Syntax.HTML),
     flags: flagsProp("lesson.code.flags", Syntax.FLAGS),
