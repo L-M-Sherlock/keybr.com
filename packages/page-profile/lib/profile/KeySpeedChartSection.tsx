@@ -5,7 +5,7 @@ import { hasData } from "@keybr/math";
 import { type KeyStatsMap } from "@keybr/result";
 import { useSettings } from "@keybr/settings";
 import { Explainer, Figure, Para } from "@keybr/widget";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { ChartWrapper } from "./ChartWrapper.tsx";
 import { SmoothnessRange } from "./SmoothnessRange.tsx";
@@ -17,16 +17,22 @@ export function KeySpeedChartSection({
 }) {
   const { settings } = useSettings();
   const { letters } = keyStatsMap;
-  const [current, setCurrent] = useState(letters[0]);
+  const [current, setCurrent] = useState(() => letters[0]);
   const [smoothness, setSmoothness] = useState(0.5);
   const target = new Target(settings);
 
-  if (!letters.includes(current)) {
-    setCurrent(letters[0]);
+  useEffect(() => {
+    if (letters.length > 0 && !letters.includes(current)) {
+      setCurrent(letters[0]);
+    }
+  }, [current, letters]);
+
+  if (letters.length === 0) {
     return null;
   }
 
-  const keyStats = keyStatsMap.get(current);
+  const effectiveCurrent = letters.includes(current) ? current : letters[0];
+  const keyStats = keyStatsMap.get(effectiveCurrent);
   const { samples } = keyStats;
 
   return (
@@ -50,7 +56,7 @@ export function KeySpeedChartSection({
       <Para align="center">
         <KeySelector
           keyStatsMap={keyStatsMap}
-          current={current}
+          current={effectiveCurrent}
           onSelect={(current) => {
             setCurrent(current);
           }}

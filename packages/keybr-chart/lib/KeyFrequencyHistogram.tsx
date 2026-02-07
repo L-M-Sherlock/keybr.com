@@ -30,7 +30,7 @@ function usePaint(styles: ChartStyles, keyStatsMap: KeyStatsMap) {
   const g = withStyles(styles);
   const { letters, results } = keyStatsMap;
 
-  if (!hasData(results)) {
+  if (letters.length === 0 || !hasData(results)) {
     return (box: Rect): ShapeList => {
       const [boxHit, boxMiss, boxRatio] = boxes(box);
       return [

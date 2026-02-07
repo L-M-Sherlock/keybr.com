@@ -16,7 +16,7 @@ import {
 } from "@keybr/result";
 import { useSettings } from "@keybr/settings";
 import { Field, FieldList, OptionList } from "@keybr/widget";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 export function ResultGrouper({
@@ -27,21 +27,34 @@ export function ResultGrouper({
   const { formatMessage } = useIntl();
   const { settings } = useSettings();
   const { results } = useResults();
-  const groups = ResultGroups.byLayout(results);
-  const resultsLayouts = new Set(groups.keys());
   const configuredLayout = settings.get(keyboardProps.layout);
-  if (resultsLayouts.size === 0) {
-    resultsLayouts.add(configuredLayout);
-  }
-  const defaultLayout = () =>
-    resultsLayouts.has(configuredLayout)
+
+  const groups = useMemo(() => ResultGroups.byLayout(results), [results]);
+  const resultsLayouts = useMemo(() => {
+    const set = new Set(groups.keys());
+    if (set.size === 0) {
+      set.add(configuredLayout);
+    }
+    return set;
+  }, [groups, configuredLayout]);
+
+  const defaultLayout = useMemo(() => {
+    return resultsLayouts.has(configuredLayout)
       ? configuredLayout
       : [...resultsLayouts][0];
-  const [selectedLayout, setSelectedLayout] = useState(defaultLayout);
+  }, [resultsLayouts, configuredLayout]);
+
+  const [selectedLayout, setSelectedLayout] = useState<Layout>(
+    () => defaultLayout,
+  );
   const [characterClass, setCharacterClass] = useState("letters");
-  if (!resultsLayouts.has(selectedLayout)) {
-    setSelectedLayout(defaultLayout());
-  }
+
+  useEffect(() => {
+    if (!resultsLayouts.has(selectedLayout)) {
+      setSelectedLayout(defaultLayout);
+    }
+  }, [defaultLayout, resultsLayouts, selectedLayout]);
+
   const layoutOptions = useLayoutOptions(resultsLayouts);
   const keyboard = loadKeyboard(selectedLayout);
   const group = groups.get(selectedLayout);
@@ -111,7 +124,9 @@ export function ResultGrouper({
               case "letters":
                 return children(
                   makeKeyStatsMap(
-                    Letter.restrict(letters, keyboard.getCodePoints()),
+                    selectedLayout.id === "ja-romaji"
+                      ? letters
+                      : Letter.restrict(letters, keyboard.getCodePoints()),
                     group,
                   ),
                 );

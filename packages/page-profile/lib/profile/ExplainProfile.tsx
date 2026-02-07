@@ -10,7 +10,7 @@ export function ExplainProfile() {
   const { explainersVisible, toggleExplainers } = useExplainerState();
   useLayoutEffect(() => {
     toggleExplainers(Preferences.get(propExplainSettings));
-  });
+  }, [toggleExplainers]);
   return (
     <FieldList>
       <Field.Filler />
