@@ -8,6 +8,7 @@ import {
 } from "@keybr/pages-shared";
 import { SettingsLoader } from "@keybr/settings-loader";
 import { querySelector } from "@keybr/widget";
+import { Analytics } from "@vercel/analytics/react";
 import { lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { useIntl } from "react-intl";
@@ -39,7 +40,10 @@ export function App() {
         <IntlLoader>
           <SettingsLoader>
             <ThemeProvider>
-              <PageRoutes />
+              <>
+                <PageRoutes />
+                <Analytics />
+              </>
             </ThemeProvider>
           </SettingsLoader>
         </IntlLoader>

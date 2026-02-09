@@ -23,9 +23,9 @@
     "@keybr/theme-designer": "*",
     "@keybr/themes": "*",
     "@keybr/thirdparties": "*",
-    "@keybr/widget": "*"
+    "@keybr/widget": "*",
+    "@vercel/analytics": "^1.6.1"
   },
-  "devDependencies": {},
   "scripts": {
     "clean": "rm -fr .types",
     "compile": "tsc",
