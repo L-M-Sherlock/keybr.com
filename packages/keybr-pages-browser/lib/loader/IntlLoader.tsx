@@ -1,5 +1,5 @@
 import { catchError } from "@keybr/debug";
-import { loadIntl } from "@keybr/intl";
+import { getDir, loadIntl } from "@keybr/intl";
 import { LoadingProgress, usePageData } from "@keybr/pages-shared";
 import { type ReactNode, useEffect, useState } from "react";
 import { type IntlShape, RawIntlProvider } from "react-intl";
@@ -25,6 +25,9 @@ export function useIntlLoader(): IntlShape | null {
 
   useEffect(() => {
     let didCancel = false;
+
+    document.documentElement.lang = locale;
+    document.documentElement.dir = getDir(locale);
 
     loadIntl(locale)
       .then((intl) => {
