@@ -37,9 +37,7 @@ export function GuidedLessonSettings({
       >
         <TargetSpeedProp />
         <RecoverKeysProp />
-        <KeyboardOrderProp
-          disabled={lesson.keyboard.layout.id === "ja-romaji"}
-        />
+        {lesson.keyboard.layout.id !== "ja-romaji" && <KeyboardOrderProp />}
         <NaturalWordsProp />
         <RepeatWordsProp />
         {lesson.model.language.id === "ja" &&

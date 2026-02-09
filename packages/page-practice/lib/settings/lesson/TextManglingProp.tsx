@@ -20,38 +20,45 @@ export function TextManglingProp(): ReactNode {
   const isJaRomaji = keyboard.layout.id === "ja-romaji";
   return (
     <>
-      <FieldList>
-        <Field>
-          <FormattedMessage
-            id="t_Add_capital_letters:"
-            defaultMessage="Add capital letters:"
-          />
-        </Field>
-        <Field>
-          <Range
-            size={16}
-            min={0}
-            max={100}
-            step={1}
-            disabled={isJaRomaji}
-            value={Math.round(settings.get(lessonProps.capitals) * 100)}
-            onChange={(value) => {
-              updateSettings(settings.set(lessonProps.capitals, value / 100));
-            }}
-          />
-        </Field>
-        <Field>
-          <Value value={formatPercents(settings.get(lessonProps.capitals))} />
-        </Field>
-      </FieldList>
-      <Explainer>
-        <Description>
-          <FormattedMessage
-            id="settings.capitalLetters.description"
-            defaultMessage="Adjust the amount of capital letters added to the lesson text. Use this option to practice typing the capital letters. We recommend to increase this value only if you have all letters above the target speed."
-          />
-        </Description>
-      </Explainer>
+      {!isJaRomaji && (
+        <>
+          <FieldList>
+            <Field>
+              <FormattedMessage
+                id="t_Add_capital_letters:"
+                defaultMessage="Add capital letters:"
+              />
+            </Field>
+            <Field>
+              <Range
+                size={16}
+                min={0}
+                max={100}
+                step={1}
+                value={Math.round(settings.get(lessonProps.capitals) * 100)}
+                onChange={(value) => {
+                  updateSettings(
+                    settings.set(lessonProps.capitals, value / 100),
+                  );
+                }}
+              />
+            </Field>
+            <Field>
+              <Value
+                value={formatPercents(settings.get(lessonProps.capitals))}
+              />
+            </Field>
+          </FieldList>
+          <Explainer>
+            <Description>
+              <FormattedMessage
+                id="settings.capitalLetters.description"
+                defaultMessage="Adjust the amount of capital letters added to the lesson text. Use this option to practice typing the capital letters. We recommend to increase this value only if you have all letters above the target speed."
+              />
+            </Description>
+          </Explainer>
+        </>
+      )}
       <FieldList>
         <Field>
           <FormattedMessage
