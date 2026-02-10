@@ -547,7 +547,9 @@ const ENTRIES = [
   { romaji: "lyu", kana: "ゅ", priority: 1 },
   { romaji: "lyo", kana: "ょ", priority: 1 },
   { romaji: "xtsu", kana: "っ", priority: 0 },
+  { romaji: "xtu", kana: "っ", priority: 0 },
   { romaji: "ltsu", kana: "っ", priority: 1 },
+  { romaji: "ltu", kana: "っ", priority: 1 },
 
   // V (hiragana)
   { romaji: "vu", kana: "ゔ", priority: 0 },

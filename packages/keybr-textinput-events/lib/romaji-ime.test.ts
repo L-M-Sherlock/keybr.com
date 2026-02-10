@@ -143,6 +143,19 @@ test("kka -> っか", () => {
   deepEqual(cps, ["っ".codePointAt(0)!, "か".codePointAt(0)!]);
 });
 
+test("xtu/ltu -> っ", () => {
+  {
+    const ime = new RomajiIme();
+    const cps = collect(ime, ch("x", { timeStamp: 1 }), ch("t", { timeStamp: 2 }), ch("u", { timeStamp: 3 }));
+    deepEqual(cps, ["っ".codePointAt(0)!]);
+  }
+  {
+    const ime = new RomajiIme();
+    const cps = collect(ime, ch("l", { timeStamp: 1 }), ch("t", { timeStamp: 2 }), ch("u", { timeStamp: 3 }));
+    deepEqual(cps, ["っ".codePointAt(0)!]);
+  }
+});
+
 test("invalid romaji keeps preedit and swallows boundary", () => {
   const ime = new RomajiIme();
   const r1 = ime.consume(ch("q", { timeStamp: 1 }));
