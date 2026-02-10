@@ -303,23 +303,7 @@ function NormalLayout({
       <Indicators state={state} />
       <div id={names.textInput} className={styles.textInput_normal}>
         {textInput}
-        {state.imeEnabled &&
-          state.settings.get(lessonProps.japanese.showRomajiHelper) && (
-            <div className={styles.imeBar}>
-              <div
-                className={
-                  state.imeValid ? styles.imePreedit : styles.imePreedit_invalid
-                }
-              >
-                {state.imePreedit || "\u00A0"}
-              </div>
-              <div className={styles.imeHints}>
-                {state.imeHints.length > 0
-                  ? state.imeHints.join(" / ")
-                  : "\u00A0"}
-              </div>
-            </div>
-          )}
+        <ZoomableImeBar id="ImeBar/Normal" state={state} />
       </div>
       <div id={names.keyboard} className={styles.keyboard}>
         <Zoomer id="Keyboard/Normal">
@@ -354,23 +338,7 @@ function CompactLayout({
       <Indicators state={state} />
       <div id={names.textInput} className={styles.textInput_compact}>
         {textInput}
-        {state.imeEnabled &&
-          state.settings.get(lessonProps.japanese.showRomajiHelper) && (
-            <div className={styles.imeBar}>
-              <div
-                className={
-                  state.imeValid ? styles.imePreedit : styles.imePreedit_invalid
-                }
-              >
-                {state.imePreedit || "\u00A0"}
-              </div>
-              <div className={styles.imeHints}>
-                {state.imeHints.length > 0
-                  ? state.imeHints.join(" / ")
-                  : "\u00A0"}
-              </div>
-            </div>
-          )}
+        <ZoomableImeBar id="ImeBar/Compact" state={state} />
       </div>
       {controls}
     </Screen>
@@ -392,25 +360,48 @@ function BareLayout({
     <Screen>
       <div id={names.textInput} className={styles.textInput_bare}>
         {textInput}
-        {state.imeEnabled &&
-          state.settings.get(lessonProps.japanese.showRomajiHelper) && (
-            <div className={styles.imeBar}>
-              <div
-                className={
-                  state.imeValid ? styles.imePreedit : styles.imePreedit_invalid
-                }
-              >
-                {state.imePreedit || "\u00A0"}
-              </div>
-              <div className={styles.imeHints}>
-                {state.imeHints.length > 0
-                  ? state.imeHints.join(" / ")
-                  : "\u00A0"}
-              </div>
-            </div>
-          )}
+        <ZoomableImeBar id="ImeBar/Bare" state={state} />
       </div>
       {controls}
     </Screen>
+  );
+}
+
+function ZoomableImeBar({
+  id,
+  state,
+}: {
+  readonly id: string;
+  readonly state: LessonState;
+}): ReactNode {
+  return (
+    state.imeEnabled &&
+    state.settings.get(lessonProps.japanese.showRomajiHelper) && (
+      <Zoomer id={id}>
+        <ImeBar state={state} />
+      </Zoomer>
+    )
+  );
+}
+
+function ImeBar({
+  state,
+}: {
+  readonly state: LessonState;
+  readonly moving?: boolean;
+}): ReactNode {
+  return (
+    <div className={styles.imeBar}>
+      <div
+        className={
+          state.imeValid ? styles.imePreedit : styles.imePreedit_invalid
+        }
+      >
+        {state.imePreedit || "\u00A0"}
+      </div>
+      <div className={styles.imeHints}>
+        {state.imeHints.length > 0 ? state.imeHints.join(" / ") : "\u00A0"}
+      </div>
+    </div>
   );
 }
