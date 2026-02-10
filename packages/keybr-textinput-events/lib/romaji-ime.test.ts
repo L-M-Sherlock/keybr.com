@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import { deepEqual, equal } from "rich-assert";
-import { RomajiIme } from "./romaji-ime.ts";
+import { RomajiIme, romajiOptionsForKana } from "./romaji-ime.ts";
 import { type IInputEvent } from "./types.ts";
 
 function ch(
@@ -64,4 +64,8 @@ test("invalid romaji keeps preedit and swallows boundary", () => {
   equal(r2.valid, false);
   equal(r2.preedit, "q");
   deepEqual(r2.events, []);
+});
+
+test("romaji options for ん", () => {
+  deepEqual(romajiOptionsForKana("ん"), ["nn", "n'", "n+consonant"]);
 });

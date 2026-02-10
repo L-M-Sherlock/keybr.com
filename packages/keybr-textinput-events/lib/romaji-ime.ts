@@ -227,6 +227,9 @@ export class RomajiIme {
 }
 
 export function romajiOptionsForKana(kana: string): readonly string[] {
+  if (kana === "ん" || kana === "ン") {
+    return ["nn", "n'", "n+consonant"];
+  }
   const list = REVERSE.get(kana);
   return list ?? [];
 }
