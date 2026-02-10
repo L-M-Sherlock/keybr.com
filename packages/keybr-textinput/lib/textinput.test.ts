@@ -629,7 +629,7 @@ test("virtual word separators advance on enter or typing", () => {
   equal(showChars(textInput), "a|[b]| |c|d");
 
   equal(textInput.appendChar(200, B, 102), Feedback.Succeeded);
-  equal(showChars(textInput), "a|b|[ ]|c|d");
+  equal(showChars(textInput), "a|b| |[c]|d");
 
   // Enter clears the virtual boundary without adding a typing step.
   equal(

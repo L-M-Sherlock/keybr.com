@@ -284,7 +284,6 @@ export class TextInput {
       return;
     }
 
-    const boundaryPending = this.#isBoundaryPending();
     const total = this.#targetChars.length;
 
     for (let i = 0; i <= total; i++) {
@@ -294,18 +293,14 @@ export class TextInput {
       if (this.#boundarySet.has(i)) {
         chars.push({
           ...this.#separator,
-          attrs: boundaryPending && i === this.pos ? Attr.Cursor : Attr.Normal,
+          attrs: Attr.Normal,
         });
       }
       if (i === total) {
         break;
       }
       const base = i < this.pos ? this.#steps[i].char : this.#targetChars[i];
-      chars.push(
-        !boundaryPending && i === this.pos
-          ? { ...base, attrs: Attr.Cursor }
-          : base,
-      );
+      chars.push(i === this.pos ? { ...base, attrs: Attr.Cursor } : base);
     }
 
     const lines = { text, lines: [{ text, chars }] };
@@ -316,7 +311,11 @@ export class TextInput {
     const attrs = step.typo ? Attr.Miss : Attr.Hit;
     this.#steps.push({ ...step, char: { ...char, attrs } });
     this.onStep(step);
-    this.#boundaryClearedAtPos = null;
+    if (this.#separator != null && this.#boundarySet.has(this.pos)) {
+      this.#boundaryClearedAtPos = this.pos;
+    } else {
+      this.#boundaryClearedAtPos = null;
+    }
   }
 
   #skipWord(timeStamp: number): void {
