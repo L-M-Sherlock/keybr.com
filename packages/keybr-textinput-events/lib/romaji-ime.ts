@@ -392,6 +392,10 @@ const ENTRIES = [
   { romaji: "hi", kana: "ひ", priority: 0 },
   { romaji: "fu", kana: "ふ", priority: 0 },
   { romaji: "hu", kana: "ふ", priority: 1 },
+  { romaji: "fa", kana: "ふぁ", priority: 0 },
+  { romaji: "fi", kana: "ふぃ", priority: 0 },
+  { romaji: "fe", kana: "ふぇ", priority: 0 },
+  { romaji: "fo", kana: "ふぉ", priority: 0 },
   { romaji: "he", kana: "へ", priority: 0 },
   { romaji: "ho", kana: "ほ", priority: 0 },
 

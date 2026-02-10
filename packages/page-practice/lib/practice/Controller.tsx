@@ -227,7 +227,10 @@ function expectedKana(textInput: TextInput): string {
       ? (textInput.at(textInput.pos + 1).codePoint as CodePoint)
       : null;
   const bH = b != null ? katakanaToHiragana(b) : null;
-  if (isHiraganaCodePoint(aH) && isSmallYCodePoint(bH)) {
+  if (
+    isHiraganaCodePoint(aH) &&
+    (isSmallYCodePoint(bH) || isSmallVowelCodePoint(bH))
+  ) {
     return String.fromCodePoint(aH, bH!);
   }
   if (isHiraganaCodePoint(aH) || aH === 0x30fc) {
@@ -259,4 +262,17 @@ function isSmallYCodePoint(codePoint: CodePoint | null): boolean {
     return false;
   }
   return codePoint === 0x3083 || codePoint === 0x3085 || codePoint === 0x3087; // ゃゅょ
+}
+
+function isSmallVowelCodePoint(codePoint: CodePoint | null): boolean {
+  if (codePoint == null) {
+    return false;
+  }
+  return (
+    codePoint === 0x3041 || // ぁ
+    codePoint === 0x3043 || // ぃ
+    codePoint === 0x3045 || // ぅ
+    codePoint === 0x3047 || // ぇ
+    codePoint === 0x3049 // ぉ
+  );
 }

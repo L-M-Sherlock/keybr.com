@@ -41,6 +41,12 @@ test("si -> し (Kunrei compatible)", () => {
   deepEqual(cps, ["し".codePointAt(0)!]);
 });
 
+test("fa -> ふぁ", () => {
+  const ime = new RomajiIme();
+  const cps = collect(ime, ch("f", { timeStamp: 1 }), ch("a", { timeStamp: 2 }));
+  deepEqual(cps, ["ふ".codePointAt(0)!, "ぁ".codePointAt(0)!]);
+});
+
 test("n + space keeps preedit and swallows space", () => {
   const ime = new RomajiIme();
   const cps = collect(ime, ch("n", { timeStamp: 1 }), space(2));
