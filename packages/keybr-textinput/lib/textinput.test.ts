@@ -613,6 +613,42 @@ test("emoji", () => {
   isTrue(textInput.completed);
 });
 
+test("virtual word separators advance on enter or typing", () => {
+  const textInput = new TextInput(
+    { kind: "wordText", words: ["ab", "cd"], separator: " " },
+    {
+      stopOnError: true,
+      forgiveErrors: true,
+      spaceSkipsWords: false,
+    },
+  );
+
+  equal(showChars(textInput), "[a]|b| |c|d");
+
+  equal(textInput.appendChar(100, A, 101), Feedback.Succeeded);
+  equal(showChars(textInput), "a|[b]| |c|d");
+
+  equal(textInput.appendChar(200, B, 102), Feedback.Succeeded);
+  equal(showChars(textInput), "a|b|[ ]|c|d");
+
+  // Enter clears the virtual boundary without adding a typing step.
+  equal(
+    textInput.onInput({
+      timeStamp: 300,
+      inputType: "appendLineBreak",
+      codePoint: 0x0000,
+      timeToType: 0,
+    }),
+    Feedback.Succeeded,
+  );
+  equal(showSteps(textInput), "a,100,101|b,200,102");
+  equal(showChars(textInput), "a|b| |[c]|d");
+
+  // Typing the next character also auto-advances the boundary.
+  equal(textInput.appendChar(400, C, 103), Feedback.Succeeded);
+  equal(showChars(textInput), "a|b| |c|[d]");
+});
+
 function showSteps({ steps }: TextInput) {
   return steps
     .map(({ codePoint, timeStamp, timeToType, typo }) => {

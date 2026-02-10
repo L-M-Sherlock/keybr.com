@@ -3,6 +3,7 @@ import {
   type Char,
   type TextDisplaySettings,
   WhitespaceStyle,
+  wordSeparatorClassName,
 } from "@keybr/textinput";
 import { type CodePoint } from "@keybr/unicode";
 import { type ReactNode } from "react";
@@ -45,7 +46,7 @@ export function renderChars(
           className={getClassName(span)}
           style={getTextStyle(span, /* special= */ true)}
         >
-          {specialChar(settings.whitespaceStyle, codePoint)}
+          {specialChar(settings.whitespaceStyle, codePoint, cls)}
         </span>,
       );
     }
@@ -54,13 +55,20 @@ export function renderChars(
   return nodes;
 }
 
-function specialChar(whitespaceStyle: WhitespaceStyle, codePoint: CodePoint) {
+function specialChar(
+  whitespaceStyle: WhitespaceStyle,
+  codePoint: CodePoint,
+  cls: string | null,
+) {
   switch (codePoint) {
     case 0x0009:
       return "\uE002";
     case 0x000a:
       return "\uE003";
     case 0x0020:
+      if (cls === wordSeparatorClassName) {
+        return "\u00A0";
+      }
       switch (whitespaceStyle) {
         case WhitespaceStyle.Bar:
           return "\uE001";

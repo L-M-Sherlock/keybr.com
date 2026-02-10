@@ -136,10 +136,26 @@ function useLessonState(
         onInput: (event) => {
           state.lastLesson = null;
           if (ime != null) {
+            if (event.inputType === "appendLineBreak") {
+              // Treat Enter as a UI action: it only advances when the current
+              // romaji preedit is empty. This avoids cases like `n + Enter`
+              // committing ん, which is inconsistent with typical IME usage.
+              if (ime.preedit === "") {
+                const feedback = state.onInput(event);
+                playSounds(feedback);
+                updateImeHints();
+                setLines(state.lines);
+                timeout.schedule(handleResetLesson, 10000);
+              }
+              return;
+            }
             const res = ime.consume(event);
             state.imePreedit = res.preedit;
             state.imeValid = res.valid;
             for (const ev of res.events) {
+              if (ev.inputType === "appendChar" && ev.codePoint === 0x0020) {
+                continue;
+              }
               const mapped = mapKanaEventToExpected(ev, state.textInput);
               const feedback = state.onInput(mapped);
               playSounds(feedback);

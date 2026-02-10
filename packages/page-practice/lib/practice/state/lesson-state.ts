@@ -16,12 +16,13 @@ import {
   type Feedback,
   type LineList,
   makeStats,
-  type StyledText,
   type TextDisplaySettings,
   TextInput,
   type TextInputSettings,
+  type TextInputText,
   toTextDisplaySettings,
   toTextInputSettings,
+  type WordText,
 } from "@keybr/textinput";
 import { type IInputEvent } from "@keybr/textinput-events";
 import { type CodePoint } from "@keybr/unicode";
@@ -88,8 +89,9 @@ export class LessonState {
     return feedback;
   }
 
-  #reset(fragment: StyledText) {
-    this.textInput = new TextInput(fragment, this.textInputSettings);
+  #reset(fragment: TextInputText) {
+    const text = toJaRomajiWordText(this.lesson, fragment);
+    this.textInput = new TextInput(text, this.textInputSettings);
     this.lines = this.textInput.lines;
     this.suffix = this.textInput.remaining.map(({ codePoint }) => codePoint);
   }
@@ -108,8 +110,29 @@ export class LessonState {
   }
 }
 
+function toJaRomajiWordText(
+  lesson: Lesson,
+  text: TextInputText,
+): TextInputText {
+  if (
+    lesson.model.language.id === "ja" &&
+    lesson.keyboard.layout.id === "ja-romaji" &&
+    typeof text === "string"
+  ) {
+    const words = text.split(/\s+/).filter((w) => w !== "");
+    const out: WordText = { kind: "wordText", words, separator: " " };
+    return out;
+  }
+  return text;
+}
+
 function normalizeKanaSteps(
-  steps: readonly { timeStamp: number; codePoint: CodePoint; timeToType: number; typo: boolean }[],
+  steps: readonly {
+    timeStamp: number;
+    codePoint: CodePoint;
+    timeToType: number;
+    typo: boolean;
+  }[],
 ) {
   return steps.map((step) => ({
     ...step,

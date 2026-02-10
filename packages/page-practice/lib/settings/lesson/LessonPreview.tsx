@@ -7,6 +7,7 @@ import {
   TextInput,
   toTextDisplaySettings,
   toTextInputSettings,
+  type WordText,
 } from "@keybr/textinput";
 import { StaticText } from "@keybr/textinput-ui";
 import { FieldSet } from "@keybr/widget";
@@ -26,8 +27,19 @@ export function LessonPreview({
     const lessonKeys = lesson.update(
       makeKeyStatsMap(lesson.letters, lesson.filter(results)),
     );
+    const text = lesson.generate(lessonKeys, LCG(123));
+    const wordText: WordText | null =
+      lesson.model.language.id === "ja" &&
+      lesson.keyboard.layout.id === "ja-romaji" &&
+      typeof text === "string"
+        ? {
+            kind: "wordText",
+            words: text.split(/\s+/).filter(Boolean),
+            separator: " ",
+          }
+        : null;
     const textInput = new TextInput(
-      lesson.generate(lessonKeys, LCG(123)),
+      wordText ?? text,
       toTextInputSettings(settings),
     );
     return { lessonKeys, textInput };

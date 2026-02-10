@@ -10,6 +10,16 @@ import {
 } from "./chars.ts";
 import { type TextInputSettings } from "./settings.ts";
 
+export const wordSeparatorClassName = "word-sep";
+
+export type WordText = {
+  readonly kind: "wordText";
+  readonly words: readonly StyledText[];
+  readonly separator?: string;
+};
+
+export type TextInputText = StyledText | WordText;
+
 export enum Feedback {
   Succeeded,
   Recovered,
@@ -29,20 +39,24 @@ const recoverBufferLength = 3;
 const garbageBufferLength = 10;
 
 export class TextInput {
-  readonly text: StyledText;
+  readonly text: TextInputText;
   readonly stopOnError: boolean;
   readonly forgiveErrors: boolean;
   readonly spaceSkipsWords: boolean;
   readonly onStep: StepListener;
   readonly #text: string;
-  readonly #chars: readonly Char[];
+  readonly #targetChars: readonly Char[];
+  readonly #boundaries: readonly number[];
+  readonly #boundarySet: ReadonlySet<number>;
+  readonly #separator: Char | null;
   #steps: (Step & { readonly char: Char })[] = [];
   #garbage: (Step & { readonly char: Char })[] = [];
   #typo!: boolean;
   #output!: { chars: Char[]; lines: LineList; remaining: Char[] };
+  #boundaryClearedAtPos: number | null = null;
 
   constructor(
-    text: StyledText,
+    text: TextInputText,
     { stopOnError, forgiveErrors, spaceSkipsWords }: TextInputSettings,
     onStep: StepListener = () => {},
   ) {
@@ -51,8 +65,12 @@ export class TextInput {
     this.forgiveErrors = forgiveErrors;
     this.spaceSkipsWords = spaceSkipsWords;
     this.onStep = onStep;
-    this.#text = flattenStyledText(text);
-    this.#chars = splitStyledText(text);
+    const normalized = normalizeText(text);
+    this.#text = normalized.text;
+    this.#targetChars = normalized.targetChars;
+    this.#boundaries = normalized.boundaries;
+    this.#boundarySet = normalized.boundarySet;
+    this.#separator = normalized.separator;
     this.reset();
   }
 
@@ -60,15 +78,16 @@ export class TextInput {
     this.#steps = [];
     this.#garbage = [];
     this.#typo = false;
+    this.#boundaryClearedAtPos = null;
     this.#update();
   }
 
   get length(): number {
-    return this.#chars.length;
+    return this.#targetChars.length;
   }
 
   at(index: number): Char {
-    return this.#chars.at(index)!;
+    return this.#targetChars.at(index)!;
   }
 
   get pos(): number {
@@ -114,6 +133,12 @@ export class TextInput {
       case "appendChar":
         return this.appendChar(timeStamp, codePoint, timeToType);
       case "appendLineBreak":
+        if (this.#separator != null) {
+          if (this.#isBoundaryPending()) {
+            this.#boundaryClearedAtPos = this.pos;
+          }
+          return this.#return(Feedback.Succeeded);
+        }
         return this.appendChar(timeStamp, 0x0020, timeToType);
       case "clearChar":
         return this.clearChar();
@@ -130,8 +155,16 @@ export class TextInput {
 
   clearWord(): Feedback {
     this.#garbage = [];
-    while (this.pos > 0 && this.at(this.pos - 1).codePoint !== 0x0020) {
-      this.#steps.pop();
+    if (this.#separator != null) {
+      const start = findWordStart(this.#boundaries, this.pos);
+      while (this.pos > start) {
+        this.#steps.pop();
+      }
+      this.#boundaryClearedAtPos = null;
+    } else {
+      while (this.pos > 0 && this.at(this.pos - 1).codePoint !== 0x0020) {
+        this.#steps.pop();
+      }
     }
     this.#typo = true;
     return this.#return(Feedback.Succeeded);
@@ -144,6 +177,13 @@ export class TextInput {
   ): Feedback {
     if (this.completed) {
       throw new Error();
+    }
+
+    if (this.#isBoundaryPending() && codePoint !== 0x0020) {
+      // Auto-advance to the next word when the user starts typing.
+      this.#boundaryClearedAtPos = this.pos;
+      this.#garbage = [];
+      this.#typo = false;
     }
 
     const { codePoint: expected } = this.at(this.pos);
@@ -217,29 +257,93 @@ export class TextInput {
     return feedback;
   }
 
+  #isBoundaryPending(): boolean {
+    return (
+      this.#separator != null &&
+      this.#boundarySet.has(this.pos) &&
+      this.#boundaryClearedAtPos !== this.pos
+    );
+  }
+
   #update(): void {
     const text = this.#text;
-    const remaining = this.#chars.slice(this.pos);
-    const chars = [];
-    chars.push(...this.#steps.map(({ char }) => char));
-    if (!this.stopOnError) {
-      chars.push(...this.#garbage.map(({ char }) => char));
+    const remaining = this.#targetChars.slice(this.pos);
+    const chars: Char[] = [];
+
+    if (this.#separator == null) {
+      chars.push(...this.#steps.map(({ char }) => char));
+      if (!this.stopOnError) {
+        chars.push(...this.#garbage.map(({ char }) => char));
+      }
+      if (remaining.length > 0) {
+        const [head, ...tail] = remaining;
+        chars.push({ ...head, attrs: Attr.Cursor }, ...tail);
+      }
+      const lines = { text, lines: [{ text, chars }] };
+      this.#output = { chars, lines, remaining };
+      return;
     }
-    if (remaining.length > 0) {
-      const [head, ...tail] = remaining;
-      chars.push({ ...head, attrs: Attr.Cursor }, ...tail);
+
+    const boundaryPending = this.#isBoundaryPending();
+    const total = this.#targetChars.length;
+
+    for (let i = 0; i <= total; i++) {
+      if (!this.stopOnError && i === this.pos) {
+        chars.push(...this.#garbage.map(({ char }) => char));
+      }
+      if (this.#boundarySet.has(i)) {
+        chars.push({
+          ...this.#separator,
+          attrs: boundaryPending && i === this.pos ? Attr.Cursor : Attr.Normal,
+        });
+      }
+      if (i === total) {
+        break;
+      }
+      const base = i < this.pos ? this.#steps[i].char : this.#targetChars[i];
+      chars.push(
+        !boundaryPending && i === this.pos
+          ? { ...base, attrs: Attr.Cursor }
+          : base,
+      );
     }
+
     const lines = { text, lines: [{ text, chars }] };
-    this.#output = { chars, lines, remaining };
+    this.#output = { chars, lines, remaining: [...remaining] };
   }
 
   #addStep(step: Step, char: Char): void {
     const attrs = step.typo ? Attr.Miss : Attr.Hit;
     this.#steps.push({ ...step, char: { ...char, attrs } });
     this.onStep(step);
+    this.#boundaryClearedAtPos = null;
   }
 
   #skipWord(timeStamp: number): void {
+    if (this.#separator != null) {
+      const start = this.pos;
+      let end = this.length;
+      for (const boundary of this.#boundaries) {
+        if (boundary > start) {
+          end = boundary;
+          break;
+        }
+      }
+      while (this.pos < end) {
+        this.#addStep(
+          {
+            timeStamp,
+            codePoint: this.at(this.pos).codePoint,
+            timeToType: 0,
+            typo: true,
+          },
+          this.at(this.pos),
+        );
+      }
+      this.#garbage = [];
+      this.#typo = false;
+      return;
+    }
     // Skip the remaining non-space characters inside the word.
     while (this.pos < this.length && this.at(this.pos).codePoint !== 0x0020) {
       this.#addStep(
@@ -307,6 +411,7 @@ export class TextInput {
 
     this.#garbage = [];
     this.#typo = false;
+    this.#boundaryClearedAtPos = null;
     return true;
   }
 
@@ -349,6 +454,71 @@ export class TextInput {
 
     this.#garbage = [];
     this.#typo = false;
+    this.#boundaryClearedAtPos = null;
     return true;
   }
+}
+
+function normalizeText(text: TextInputText): {
+  readonly text: string;
+  readonly targetChars: readonly Char[];
+  readonly boundaries: readonly number[];
+  readonly boundarySet: ReadonlySet<number>;
+  readonly separator: Char | null;
+} {
+  if (isWordText(text)) {
+    const separator = text.separator ?? " ";
+    const words = text.words.filter((w) => flattenStyledText(w) !== "");
+    const boundaries: number[] = [];
+    const targetChars: Char[] = [];
+    const styledText: StyledText[] = [];
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      styledText.push(word);
+      targetChars.push(...splitStyledText(word));
+      if (i + 1 < words.length) {
+        boundaries.push(targetChars.length);
+        styledText.push({ text: separator, cls: wordSeparatorClassName });
+      }
+    }
+    return {
+      text: flattenStyledText(styledText),
+      targetChars,
+      boundaries,
+      boundarySet: new Set<number>(boundaries),
+      separator: {
+        codePoint: 0x0020,
+        attrs: Attr.Normal,
+        cls: wordSeparatorClassName,
+      },
+    };
+  }
+
+  return {
+    text: flattenStyledText(text),
+    targetChars: splitStyledText(text),
+    boundaries: [],
+    boundarySet: new Set<number>(),
+    separator: null,
+  };
+}
+
+function isWordText(v: unknown): v is WordText {
+  return (
+    v != null &&
+    typeof v === "object" &&
+    "kind" in v &&
+    (v as any).kind === "wordText"
+  );
+}
+
+function findWordStart(boundaries: readonly number[], pos: number): number {
+  let start = 0;
+  for (const boundary of boundaries) {
+    if (boundary >= pos) {
+      break;
+    }
+    start = boundary;
+  }
+  return start;
 }
