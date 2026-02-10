@@ -66,9 +66,6 @@ function specialChar(
     case 0x000a:
       return "\uE003";
     case 0x0020:
-      if (cls === wordSeparatorClassName) {
-        return "\u00A0";
-      }
       switch (whitespaceStyle) {
         case WhitespaceStyle.Bar:
           return "\uE001";

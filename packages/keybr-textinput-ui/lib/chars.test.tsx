@@ -1,5 +1,9 @@
 import { test } from "node:test";
-import { Attr, textDisplaySettings } from "@keybr/textinput";
+import {
+  Attr,
+  textDisplaySettings,
+  wordSeparatorClassName,
+} from "@keybr/textinput";
 import { deepEqual } from "rich-assert";
 import { renderChars } from "./chars.tsx";
 
@@ -159,6 +163,43 @@ test("render special chars", () => {
         style={{ color: "var(--textinput--special__color)" }}
       >
         {"\uE000"}
+      </span>,
+    ],
+  );
+});
+
+test("render word separators as whitespace", () => {
+  deepEqual(
+    renderChars(textDisplaySettings, [
+      { codePoint: /* "a" */ 0x0061, attrs: Attr.Normal },
+      {
+        codePoint: /* " " */ 0x0020,
+        attrs: Attr.Normal,
+        cls: wordSeparatorClassName,
+      },
+      { codePoint: /* "b" */ 0x0062, attrs: Attr.Normal },
+    ]),
+    [
+      <span
+        key={0}
+        className={undefined}
+        style={{ color: "var(--textinput__color)" }}
+      >
+        a
+      </span>,
+      <span
+        key={1}
+        className={undefined}
+        style={{ color: "var(--textinput--special__color)" }}
+      >
+        {"\uE000"}
+      </span>,
+      <span
+        key={2}
+        className={undefined}
+        style={{ color: "var(--textinput__color)" }}
+      >
+        b
       </span>,
     ],
   );
