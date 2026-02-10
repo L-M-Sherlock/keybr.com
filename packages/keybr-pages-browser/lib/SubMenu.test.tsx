@@ -1,5 +1,9 @@
 import { test } from "node:test";
-import { FakeIntlProvider, PreferredLocaleContext } from "@keybr/intl";
+import {
+  defaultLocale,
+  FakeIntlProvider,
+  PreferredLocaleContext,
+} from "@keybr/intl";
 import { PageDataContext } from "@keybr/pages-shared";
 import { render } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
@@ -38,6 +42,41 @@ test("render", () => {
   const link = english.closest("a");
   isNotNull(link);
   equal(link.getAttribute("href"), "/en/page");
+
+  r.unmount();
+});
+
+test("default locale link includes locale prefix", () => {
+  const r = render(
+    <PageDataContext.Provider
+      value={{
+        base: "https://www.keybr.com/",
+        locale: defaultLocale,
+        user: null,
+        publicUser: {
+          id: "userId",
+          name: "userName",
+          imageUrl: "imageUrl",
+          premium: false,
+        },
+        settings: null,
+      }}
+    >
+      <PreferredLocaleContext.Provider value={defaultLocale}>
+        <FakeIntlProvider>
+          <MemoryRouter>
+            <SubMenu currentPath="/" />
+          </MemoryRouter>
+        </FakeIntlProvider>
+      </PreferredLocaleContext.Provider>
+    </PageDataContext.Provider>,
+  );
+
+  const english = r.queryByText("English");
+  isNotNull(english);
+  const link = english.closest("a");
+  isNotNull(link);
+  equal(link.getAttribute("href"), "/en");
 
   r.unmount();
 });

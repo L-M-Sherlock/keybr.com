@@ -61,7 +61,7 @@ function LocaleSwitcher({ currentPath }: { readonly currentPath: string }) {
   primary.push(
     <StaticLink
       className={styles.localeLink}
-      href={Pages.intlPath(currentPath, preferredLocale)}
+      href={intlPathIncludingDefaultLocale(currentPath, preferredLocale)}
     >
       {formatLocalLanguageName(preferredLocale)}
     </StaticLink>,
