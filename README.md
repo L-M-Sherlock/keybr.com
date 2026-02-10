@@ -63,8 +63,8 @@ Optional build-time env vars:
 ## Local data import/export
 
 In static mode, go to **Profile**:
-- **Export data**: exports local data (history + settings + preferences + theme) to `keybr-local-data.json`
-- **Import data**: imports a JSON file and overwrites current local data (supports `keybr-local-data.json`, and legacy `typing-data.json`)
+- **Export data**: exports local data (history + settings + preferences + theme) to `kanabr-local-data.json`
+- **Import data**: imports a JSON file and overwrites current local data (supports `kanabr-local-data.json`, legacy `keybr-local-data.json`, and legacy `typing-data.json`)
 - **Reset local data**: clears all local data and resets to defaults
 
 ## Japanese kana (romaji input) mode

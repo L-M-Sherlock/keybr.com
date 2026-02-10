@@ -144,7 +144,7 @@ function useCommands() {
         };
         const json = JSON.stringify(bundle);
         const blob = new Blob([json], { type: "application/json" });
-        download(blob, "keybr-local-data.json");
+        download(blob, "kanabr-local-data.json");
       } else {
         const json = JSON.stringify(results);
         const blob = new Blob([json], { type: "application/json" });
