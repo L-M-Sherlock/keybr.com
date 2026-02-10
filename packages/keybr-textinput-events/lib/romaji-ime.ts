@@ -61,7 +61,10 @@ export class RomajiIme {
     const ch = String.fromCodePoint(event.codePoint);
     // Word boundary: flush pending romaji, then forward the boundary character.
     if (ch === " ") {
-      return this.#flushThenForward(event, /* atBoundary= */ true);
+      // Do not treat space as a hard boundary for a lone trailing "n".
+      // This keeps "n" pending (requires "nn"/"n'" or continuation typing),
+      // and avoids training the user to use Space to commit ん.
+      return this.#flushThenForward(event, /* atBoundary= */ false);
     }
     // Long vowel mark for katakana words.
     if (ch === "-") {
@@ -103,18 +106,24 @@ export class RomajiIme {
       // Handle "n" rules for ん.
       if (this.#buffer.startsWith("n'")) {
         const strokes = 2;
-        out.push(...this.#emitKana("ん", timeStamp, this.#consume(strokes), strokes));
+        out.push(
+          ...this.#emitKana("ん", timeStamp, this.#consume(strokes), strokes),
+        );
         continue;
       }
       if (this.#buffer.startsWith("nn")) {
         const strokes = 2;
-        out.push(...this.#emitKana("ん", timeStamp, this.#consume(strokes), strokes));
+        out.push(
+          ...this.#emitKana("ん", timeStamp, this.#consume(strokes), strokes),
+        );
         continue;
       }
       if (this.#buffer === "n") {
         if (atBoundary) {
           const strokes = 1;
-          out.push(...this.#emitKana("ん", timeStamp, this.#consume(strokes), strokes));
+          out.push(
+            ...this.#emitKana("ん", timeStamp, this.#consume(strokes), strokes),
+          );
         }
         break; // Wait for more input or boundary.
       }
@@ -122,7 +131,9 @@ export class RomajiIme {
         const next = this.#buffer[1];
         if (next != null && !isVowel(next) && next !== "y" && next !== "'") {
           const strokes = 1;
-          out.push(...this.#emitKana("ん", timeStamp, this.#consume(strokes), strokes));
+          out.push(
+            ...this.#emitKana("ん", timeStamp, this.#consume(strokes), strokes),
+          );
           continue;
         }
       }
@@ -133,7 +144,9 @@ export class RomajiIme {
         const b = this.#buffer[1];
         if (a === b && isConsonant(a) && a !== "n") {
           const strokes = 1;
-          out.push(...this.#emitKana("っ", timeStamp, this.#consume(strokes), strokes));
+          out.push(
+            ...this.#emitKana("っ", timeStamp, this.#consume(strokes), strokes),
+          );
           continue;
         }
       }

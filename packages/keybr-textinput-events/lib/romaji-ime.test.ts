@@ -5,10 +5,7 @@ import { type IInputEvent } from "./types.ts";
 
 function ch(
   s: string,
-  {
-    timeStamp,
-    timeToType = 100,
-  }: { timeStamp: number; timeToType?: number } = { timeStamp: 0 },
+  { timeStamp, timeToType = 100 }: { timeStamp: number; timeToType?: number } = { timeStamp: 0 },
 ): IInputEvent {
   return {
     type: "input",
@@ -44,10 +41,10 @@ test("si -> し (Kunrei compatible)", () => {
   deepEqual(cps, ["し".codePointAt(0)!]);
 });
 
-test("n + space -> ん + space", () => {
+test("n + space keeps preedit and swallows space", () => {
   const ime = new RomajiIme();
   const cps = collect(ime, ch("n", { timeStamp: 1 }), space(2));
-  deepEqual(cps, ["ん".codePointAt(0)!, 0x0020]);
+  deepEqual(cps, []);
 });
 
 test("kka -> っか", () => {
@@ -68,4 +65,3 @@ test("invalid romaji keeps preedit and swallows boundary", () => {
   equal(r2.preedit, "q");
   deepEqual(r2.events, []);
 });
-
