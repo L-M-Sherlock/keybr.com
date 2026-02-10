@@ -15,6 +15,7 @@ export function SubMenu({ currentPath }: { readonly currentPath: string }) {
   return (
     <div className={styles.root}>
       <GithubLink />
+      <KeybrLink />
       <LocaleSwitcher currentPath={currentPath} />
     </div>
   );
@@ -32,6 +33,23 @@ function GithubLink() {
       })}
     >
       Github
+    </StaticLink>
+  );
+}
+
+function KeybrLink() {
+  const { formatMessage } = useIntl();
+  return (
+    <StaticLink
+      href="https://www.keybr.com/"
+      target="keybr"
+      title={formatMessage({
+        id: "footer.keybrLink.description",
+        defaultMessage:
+          "For other languages and keyboard layouts, use keybr.com.",
+      })}
+    >
+      keybr.com
     </StaticLink>
   );
 }
