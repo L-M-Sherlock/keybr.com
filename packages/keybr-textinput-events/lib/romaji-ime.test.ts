@@ -156,6 +156,74 @@ test("xtu/ltu -> っ", () => {
   }
 });
 
+test("extended combos", () => {
+  const cases: ReadonlyArray<readonly [string, string]> = [
+    ["kyi", "きぃ"],
+    ["kye", "きぇ"],
+    ["qwu", "くぅ"],
+    ["gyi", "ぎぃ"],
+    ["gye", "ぎぇ"],
+    ["gwa", "ぐぁ"],
+    ["gwi", "ぐぃ"],
+    ["gwu", "ぐぅ"],
+    ["gwe", "ぐぇ"],
+    ["gwo", "ぐぉ"],
+    ["syi", "しぃ"],
+    ["swa", "すぁ"],
+    ["swi", "すぃ"],
+    ["swu", "すぅ"],
+    ["swe", "すぇ"],
+    ["swo", "すぉ"],
+    ["zyi", "じぃ"],
+    ["zyu", "じゅ"],
+    ["zye", "じぇ"],
+    ["zyo", "じょ"],
+    ["tyi", "ちぃ"],
+    ["tye", "ちぇ"],
+    ["che", "ちぇ"],
+    ["tha", "てゃ"],
+    ["the", "てぇ"],
+    ["tho", "てょ"],
+    ["twa", "とぁ"],
+    ["twi", "とぃ"],
+    ["twe", "とぇ"],
+    ["two", "とぉ"],
+    ["dya", "ぢゃ"],
+    ["dyi", "ぢぃ"],
+    ["dyu", "ぢゅ"],
+    ["dye", "ぢぇ"],
+    ["dyo", "ぢょ"],
+    ["dha", "でゃ"],
+    ["dhe", "でぇ"],
+    ["dho", "でょ"],
+    ["dwa", "どぁ"],
+    ["dwi", "どぃ"],
+    ["dwe", "どぇ"],
+    ["dwo", "どぉ"],
+    ["nyi", "にぃ"],
+    ["nye", "にぇ"],
+    ["hyi", "ひぃ"],
+    ["hye", "ひぇ"],
+    ["byi", "びぃ"],
+    ["bye", "びぇ"],
+    ["pyi", "ぴぃ"],
+    ["pye", "ぴぇ"],
+    ["myi", "みぃ"],
+    ["mye", "みぇ"],
+    ["ryi", "りぃ"],
+    ["rye", "りぇ"],
+  ];
+
+  const cpsOf = (s: string): number[] => [...s].map((c) => c.codePointAt(0)!);
+
+  for (const [romaji, kana] of cases) {
+    const ime = new RomajiIme();
+    const events = [...romaji].map((c, i) => ch(c, { timeStamp: i + 1 }));
+    const cps = collect(ime, ...events);
+    deepEqual(cps, cpsOf(kana), `${romaji} -> ${kana}`);
+  }
+});
+
 test("invalid romaji keeps preedit and swallows boundary", () => {
   const ime = new RomajiIme();
   const r1 = ime.consume(ch("q", { timeStamp: 1 }));
