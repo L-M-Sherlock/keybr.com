@@ -16,11 +16,21 @@
 }
 
 .localeList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+  align-items: center;
+  justify-content: center;
   margin-inline: 2rem;
   margin-block: 0;
 }
 
 .localeLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 0.25rem;
+  padding-block: 0.1rem;
   white-space: nowrap;
 }
 
@@ -35,10 +45,10 @@
   }
 
   .localeList {
-    display: block;
+    align-self: stretch;
+    min-inline-size: 0;
     max-inline-size: 100%;
     margin-inline: 0;
     overflow: visible;
-    white-space: normal;
   }
 }

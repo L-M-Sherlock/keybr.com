@@ -79,9 +79,6 @@ function LocaleSwitcher({ currentPath }: { readonly currentPath: string }) {
   const secondary = [];
   for (const locale of allLocales) {
     if (locale !== preferredLocale && locale !== defaultLocale) {
-      if (secondary.length > 0) {
-        secondary.push(" ");
-      }
       secondary.push(
         <StaticLink
           className={styles.localeLink}
