@@ -26,11 +26,9 @@ export function main() {
 const AccountPage = lazy(() => import("./pages/account.tsx"));
 const HelpPage = lazy(() => import("./pages/help.tsx"));
 const HighScorePage = lazy(() => import("./pages/high-scores.tsx"));
-const LayoutsPage = lazy(() => import("./pages/layouts.tsx"));
 const MultiplayerPage = lazy(() => import("./pages/multiplayer.tsx"));
 const PracticePage = lazy(() => import("./pages/practice.tsx"));
 const ProfilePage = lazy(() => import("./pages/profile.tsx"));
-const TypingTestPage = lazy(() => import("./pages/typing-test.tsx"));
 const TermsOfServicePage = lazy(() => import("./pages/terms-of-service.tsx"));
 const PrivacyPolicyPage = lazy(() => import("./pages/privacy-policy.tsx"));
 
@@ -104,17 +102,6 @@ function PageRoutes() {
           }
         />
         <Route
-          path={Pages.layouts.path}
-          element={
-            <Template path={Pages.layouts.path}>
-              <Title page={Pages.layouts} />
-              <Suspense fallback={<LoadingProgress />}>
-                <LayoutsPage />
-              </Suspense>
-            </Template>
-          }
-        />
-        <Route
           path={Pages.multiplayer.path}
           element={
             <Template path={Pages.multiplayer.path}>
@@ -143,17 +130,6 @@ function PageRoutes() {
               <Title page={Pages.profile} />
               <Suspense fallback={<LoadingProgress />}>
                 <ProfilePage />
-              </Suspense>
-            </Template>
-          }
-        />
-        <Route
-          path={Pages.typingTest.path}
-          element={
-            <Template path={Pages.typingTest.path}>
-              <Title page={Pages.typingTest} />
-              <Suspense fallback={<LoadingProgress />}>
-                <TypingTestPage />
               </Suspense>
             </Template>
           }

@@ -104,23 +104,18 @@ function Content({ page }: { readonly page: PageInfo }) {
       {page.link.title && <p>{formatMessage(page.link.title)}</p>}
       <nav>
         <ul>
-          {[
-            Pages.practice,
-            Pages.profile,
-            Pages.typingTest,
-            Pages.multiplayer,
-            Pages.layouts,
-            Pages.help,
-          ].map(({ path, link }, index) => (
-            <li key={index}>
-              <a
-                href={Pages.intlPath(path, locale)}
-                title={link.title && formatMessage(link.title)}
-              >
-                {formatMessage(link.label)}
-              </a>
-            </li>
-          ))}
+          {[Pages.practice, Pages.profile, Pages.multiplayer, Pages.help].map(
+            ({ path, link }, index) => (
+              <li key={index}>
+                <a
+                  href={Pages.intlPath(path, locale)}
+                  title={link.title && formatMessage(link.title)}
+                >
+                  {formatMessage(link.label)}
+                </a>
+              </li>
+            ),
+          )}
         </ul>
       </nav>
     </>

@@ -118,32 +118,6 @@ export class Controller {
     return this.renderPage(ctx, Pages.highScores, intl);
   }
 
-  @http.GET(`${Pages.layouts.path}`)
-  async ["layouts"](ctx: Context<RouterState & AuthState>) {
-    return this.renderPage(ctx, Pages.layouts);
-  }
-
-  @http.GET(`/{locale:${localePattern}}${Pages.layouts.path}`)
-  async ["layouts-i18n"](
-    ctx: Context<RouterState & AuthState>,
-    @pathParam("locale", pIntl) intl: IntlShape,
-  ) {
-    return this.renderPage(ctx, Pages.layouts, intl);
-  }
-
-  @http.GET(`${Pages.typingTest.path}`)
-  async ["typing-test"](ctx: Context<RouterState & AuthState>) {
-    return this.renderPage(ctx, Pages.typingTest);
-  }
-
-  @http.GET(`/{locale:${localePattern}}${Pages.typingTest.path}`)
-  async ["typing-test-i18n"](
-    ctx: Context<RouterState & AuthState>,
-    @pathParam("locale", pIntl) intl: IntlShape,
-  ) {
-    return this.renderPage(ctx, Pages.typingTest, intl);
-  }
-
   @http.GET(`${Pages.multiplayer.path}`)
   async ["multiplayer"](ctx: Context<RouterState & AuthState>) {
     return this.renderPage(ctx, Pages.multiplayer);
