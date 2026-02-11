@@ -80,7 +80,9 @@ export function ThemeSwitcher() {
           }}
         />
       </Popover>
-      <FullscreenButton />
+      <span className={styles.fullscreen}>
+        <FullscreenButton />
+      </span>
     </div>
   );
 }

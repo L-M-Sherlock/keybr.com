@@ -7,6 +7,10 @@
   block-size: 3rem;
 }
 
+.fullscreen {
+  display: inline-flex;
+}
+
 .menu {
   list-style: none;
   max-block-size: 20rem;
@@ -48,4 +52,10 @@
 .item_selected:hover {
   color: var(--MenuItem--selected__color);
   background-color: var(--MenuItem--selected__background-color);
+}
+
+@media (max-width: 48rem) {
+  .fullscreen {
+    display: none;
+  }
 }
