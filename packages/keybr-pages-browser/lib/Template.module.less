@@ -65,3 +65,34 @@
   padding-inline: 0.5rem;
   padding-block: 0.5rem;
 }
+
+@media (max-width: 48rem) {
+  .body,
+  .bodyAlt {
+    grid-template-areas: "main";
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr;
+    overflow-x: hidden;
+  }
+
+  .nav,
+  .navAlt {
+    position: fixed;
+    inset-inline: 0;
+    inset-block-end: 0;
+    z-index: 10;
+    padding: 0;
+  }
+
+  .main,
+  .mainAlt {
+    padding-inline: 0.5rem;
+    padding-block: 0.5rem;
+    padding-block-end: calc(4rem + env(safe-area-inset-bottom));
+  }
+
+  .topbar,
+  .sidebar {
+    display: none;
+  }
+}

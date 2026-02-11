@@ -62,3 +62,42 @@
   max-inline-size: 8rem;
   text-align: center;
 }
+
+@media (max-width: 48rem) {
+  .root {
+    display: flex;
+    position: static;
+    flex-direction: row;
+    align-items: stretch;
+    max-inline-size: none;
+    padding-block-end: env(safe-area-inset-bottom);
+    border-block-start: var(--separator-border);
+    overflow-x: auto;
+    overflow-y: hidden;
+    background-color: var(--background-color);
+    box-shadow: var(--Surface__box-shadow);
+    backdrop-filter: var(--Surface__backdrop-filter);
+  }
+
+  .item + .item {
+    border-inline-start: var(--separator-border);
+    border-block-start: none;
+  }
+
+  .link {
+    justify-content: center;
+    padding-inline: 0.75rem;
+  }
+
+  .label {
+    display: none;
+  }
+
+  .accountLink {
+    padding-block: 0.5rem;
+  }
+
+  .userName {
+    display: none;
+  }
+}

@@ -25,6 +25,7 @@ function GithubLink() {
   const { formatMessage } = useIntl();
   return (
     <StaticLink
+      className={styles.extLink}
       href="https://github.com/L-M-Sherlock/kanabr"
       target="github"
       title={formatMessage({
@@ -41,6 +42,7 @@ function KeybrLink() {
   const { formatMessage } = useIntl();
   return (
     <StaticLink
+      className={styles.extLink}
       href="https://www.keybr.com/"
       target="keybr"
       title={formatMessage({
