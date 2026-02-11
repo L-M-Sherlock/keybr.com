@@ -5,9 +5,8 @@ import {
   usePreferredLocale,
 } from "@keybr/intl";
 import { Pages } from "@keybr/pages-shared";
-import { Link as StaticLink } from "@keybr/widget";
+import { Link as StaticLink, OptionList } from "@keybr/widget";
 import { useIntl } from "react-intl";
-import { Link as RouterLink } from "react-router";
 import * as styles from "./SubMenu.module.less";
 
 export function SubMenu({ currentPath }: { readonly currentPath: string }) {
@@ -55,46 +54,30 @@ function KeybrLink() {
 }
 
 function LocaleSwitcher({ currentPath }: { readonly currentPath: string }) {
-  const { formatLanguageName, formatLocalLanguageName } = useIntlDisplayNames();
+  const { formatLocalLanguageName } = useIntlDisplayNames();
   const preferredLocale = usePreferredLocale();
-  const primary = [];
-  primary.push(
-    <StaticLink
-      className={styles.localeLink}
-      href={intlPathIncludingDefaultLocale(currentPath, preferredLocale)}
-    >
-      {formatLocalLanguageName(preferredLocale)}
-    </StaticLink>,
-  );
-  if (preferredLocale !== defaultLocale) {
-    primary.push(
-      <StaticLink
-        className={styles.localeLink}
-        href={intlPathIncludingDefaultLocale(currentPath, defaultLocale)}
-      >
-        {formatLocalLanguageName(defaultLocale)}
-      </StaticLink>,
-    );
-  }
-  const secondary = [];
-  for (const locale of allLocales) {
-    if (locale !== preferredLocale && locale !== defaultLocale) {
-      secondary.push(
-        <StaticLink
-          className={styles.localeLink}
-          href={Pages.intlPath(currentPath, locale)}
-          title={`${formatLocalLanguageName(locale)} / ${formatLanguageName(locale)}`}
-        >
-          {locale}
-        </StaticLink>,
-      );
+  const options = allLocales.map((locale) => ({
+    value: locale,
+    name: formatLocalLanguageName(locale),
+  }));
+
+  const handleSelect = (value: string) => {
+    const next = intlPathIncludingDefaultLocale(currentPath, value);
+    if (typeof window === "undefined") {
+      return;
     }
-  }
+    const { search, hash } = window.location;
+    window.location.assign(`${next}${search}${hash}`);
+  };
+
   return (
-    <>
-      {...primary}
-      <span className={styles.localeList}>{...secondary}</span>
-    </>
+    <OptionList
+      className={styles.localeSelect}
+      options={options}
+      value={preferredLocale}
+      size="full"
+      onSelect={handleSelect}
+    />
   );
 }
 
