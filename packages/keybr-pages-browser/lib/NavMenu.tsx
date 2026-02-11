@@ -32,10 +32,6 @@ export function NavMenu({ currentPath }: { readonly currentPath: string }) {
       </MenuItem>
 
       <MenuItem>
-        <MenuItemLink page={Pages.profile} />
-      </MenuItem>
-
-      <MenuItem>
         <MenuItemLink page={Pages.help} />
       </MenuItem>
 
@@ -78,8 +74,8 @@ function AccountLink({ user }: { readonly user: AnyUser }) {
           ? user.name
           : KEYBR_STATIC
             ? formatMessage({
-                id: "static.menu.localData",
-                defaultMessage: "Local data",
+                id: "t_Profile",
+                defaultMessage: "Profile",
               })
             : formatMessage({
                 id: "t_Sing_In",
