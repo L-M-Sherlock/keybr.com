@@ -68,25 +68,37 @@
     display: flex;
     position: static;
     flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.25rem;
     align-items: stretch;
+    justify-content: center;
     max-inline-size: none;
+    padding-inline: 0.25rem;
+    padding-block: 0.5rem;
     padding-block-end: env(safe-area-inset-bottom);
     border-block-start: var(--separator-border);
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: hidden;
     background-color: var(--background-color);
     box-shadow: var(--Surface__box-shadow);
     backdrop-filter: var(--Surface__backdrop-filter);
   }
 
+  .item {
+    display: flex;
+    flex: 1 0 20%;
+    justify-content: center;
+  }
+
   .item + .item {
-    border-inline-start: var(--separator-border);
+    border-inline-start: none;
     border-block-start: none;
   }
 
   .link {
     justify-content: center;
+    block-size: 2.75rem;
     padding-inline: 0.75rem;
+    line-height: 2.75rem;
   }
 
   .label {
@@ -94,7 +106,7 @@
   }
 
   .accountLink {
-    padding-block: 0.5rem;
+    padding-block: 0.25rem;
   }
 
   .userName {
