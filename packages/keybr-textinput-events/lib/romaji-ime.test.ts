@@ -143,6 +143,19 @@ test("kka -> っか", () => {
   deepEqual(cps, ["っ".codePointAt(0)!, "か".codePointAt(0)!]);
 });
 
+test("double consonant assigns time to small っ", () => {
+  const ime = new RomajiIme();
+  const r1 = ime.consume(ch("k", { timeStamp: 1, timeToType: 500 }));
+  const r2 = ime.consume(ch("k", { timeStamp: 2, timeToType: 50 }));
+  const r3 = ime.consume(ch("a", { timeStamp: 3, timeToType: 50 }));
+  const events = [...r1.events, ...r2.events, ...r3.events];
+  equal(events.length, 2);
+  equal(events[0].codePoint, "っ".codePointAt(0)!);
+  equal(events[1].codePoint, "か".codePointAt(0)!);
+  equal(events[0].timeToType, 50);
+  equal(events[1].timeToType, (500 + 50) / 2);
+});
+
 test("xtu/ltu -> っ", () => {
   {
     const ime = new RomajiIme();

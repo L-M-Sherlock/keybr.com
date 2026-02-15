@@ -143,6 +143,11 @@ export class RomajiIme {
         const a = this.#buffer[0];
         const b = this.#buffer[1];
         if (a === b && isConsonant(a) && a !== "n") {
+          if (this.#times.length >= 2) {
+            const tmp = this.#times[0];
+            this.#times[0] = this.#times[1];
+            this.#times[1] = tmp;
+          }
           const strokes = 1;
           out.push(
             ...this.#emitKana("っ", timeStamp, this.#consume(strokes), strokes),
